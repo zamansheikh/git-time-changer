@@ -62,7 +62,9 @@ function parseLine(line) {
   return cells;
 }
 
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Also escapes quotes: the same text goes into aria-label="...", and a raw " breaks the SVG.
+const esc = (s) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const n = (v) => Number(v.toFixed(2));
 const sameStyle = (a, b) => a.fg === b.fg && a.bold === b.bold && a.dim === b.dim && a.underline === b.underline;
 

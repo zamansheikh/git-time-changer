@@ -15,7 +15,9 @@ const CAPTION = 26;
 const HEADER = 74;
 const SANS = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif`;
 
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Also escapes quotes: the same text goes into aria-label="...", and a raw " breaks the SVG.
+const esc = (s) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const n = (v) => Number(v.toFixed(2));
 
 /** sections: [{ title, lines: [text, ...] }] */

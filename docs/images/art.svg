@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="994" height="507" viewBox="0 0 994 507" role="img" aria-label="gtc art "Hello!": the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in green on the updated graph.">
-<title>gtc art "Hello!": the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in green on the updated graph.</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="994" height="507" viewBox="0 0 994 507" role="img" aria-label="gtc art &quot;Hello!&quot;: the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in green on the updated graph.">
+<title>gtc art &quot;Hello!&quot;: the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in green on the updated graph.</title>
 <g font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="14">
 <rect x="0.5" y="0.5" width="993" height="506" rx="10" fill="#0d1117" stroke="#30363d"/>
 <path d="M0.5 38H993.5" stroke="#30363d"/>
@@ -11,7 +11,7 @@
 <path d="M24.2 56.4L28.4 60.4L24.2 64.4" stroke="#3fb950" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 <text x="38.8 47.2 55.6" y="65.44" fill="#e6edf3" font-weight="700">gtc</text>
 <text x="72.4 80.8 89.2" y="65.44" fill="#e6edf3" font-weight="700">art</text>
-<text x="106 114.4 122.8 131.2 139.6 148 156.4 164.8" y="65.44" fill="#e6edf3" font-weight="700">"Hello!"</text>
+<text x="106 114.4 122.8 131.2 139.6 148 156.4 164.8" y="65.44" fill="#e6edf3" font-weight="700">&quot;Hello!&quot;</text>
 <text x="181.6 190 198.4 206.8 215.2 223.6" y="65.44" fill="#e6edf3" font-weight="700">--push</text>
 <path d="M39 77.4L41.8 80.2L47.2 73.8" stroke="#3fb950" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 <text x="55.6 64 72.4 80.8 89.2 97.6" y="82.24" fill="#e6edf3">Loaded</text>
