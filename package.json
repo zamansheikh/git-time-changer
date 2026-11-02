@@ -1,6 +1,6 @@
 {
   "name": "git-time-changer",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Write words across your GitHub contribution graph, or fill only the days you missed, from a friendly terminal UI.",
   "main": "src/cli/index.js",
   "bin": {
