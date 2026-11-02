@@ -5,7 +5,7 @@
 const dates = require('../../core/dates');
 const planner = require('../../core/plan');
 const { renderText } = require('../../core/font');
-const { parsed, UserError } = require('../helpers');
+const { parsed, UserError, artText } = require('../helpers');
 const { createContext, capRangeAtToday, loadWithSpinner } = require('../context');
 const { printContext, showGraph, printPlan } = require('../output');
 const { execute } = require('../run');
@@ -13,8 +13,8 @@ const { execute } = require('../run');
 async function run(opts, positionals) {
   const ctx = await createContext(opts, { repoRequired: true });
   capRangeAtToday(ctx);
-  const text = positionals.join(' ').trim();
-  if (!text) throw new UserError('Give the text to draw.', 'Example: gtc art "HELLO" --dry-run');
+  const text = artText(positionals);
+  if (!text) throw new UserError('Give the text to draw.', 'Example: gtc art "Hello" --dry-run');
   const perCell = opts.commits ? parsed(() => planner.parseCommitRange(opts.commits)) : null;
   let start;
   if (opts.start) {

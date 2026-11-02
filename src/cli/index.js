@@ -9,7 +9,7 @@ const prompt = require('../ui/prompt');
 const commands = require('./commands');
 const interactive = require('./interactive');
 const { printHelp } = require('./help');
-const { UserError } = require('./helpers');
+const { UserError, splitShellComment } = require('./helpers');
 
 const { c, log } = term;
 
@@ -53,9 +53,10 @@ function printError(error) {
 }
 
 async function main(argv = process.argv.slice(2)) {
+  const split = splitShellComment(argv);
   let args;
   try {
-    args = parseArgs({ args: argv, options: OPTIONS, allowPositionals: true });
+    args = parseArgs({ args: split.argv, options: OPTIONS, allowPositionals: true });
   } catch (error) {
     printError(new UserError(error.message.replace(/\. To specify.*$/s, '.'), 'Run gtc --help to see all options.'));
     process.exitCode = 1;
@@ -64,6 +65,7 @@ async function main(argv = process.argv.slice(2)) {
   const opts = args.values;
   const [name, ...rest] = args.positionals;
   if (opts['no-color']) term.setDepth(1);
+  if (split.comment) log.warn(`Ignored "${split.comment}": your shell passed this comment to gtc.`);
   if (opts.version) {
     process.stdout.write(`${pkg.version}\n`);
     return;

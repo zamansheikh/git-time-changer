@@ -4,7 +4,7 @@
 
 **Write words across your GitHub contribution graph, or fill only the days you missed.**
 
-A zero-dependency terminal tool that draws pixel text like **Hello!** on your contribution calendar, finds the days with no commits, and previews every change before it creates a single backdated commit.
+A zero-dependency terminal tool that draws pixel text like **Hello** on your contribution calendar, finds the days with no commits, and previews every change before it creates a single backdated commit.
 
 [![npm](https://img.shields.io/npm/v/git-time-changer?logo=npm&color=cb3837)](https://www.npmjs.com/package/git-time-changer)
 [![Node.js ≥ 18.3](https://img.shields.io/badge/node-%E2%89%A518.3-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
@@ -12,10 +12,10 @@ A zero-dependency terminal tool that draws pixel text like **Hello!** on your co
 [![License: ISC](https://img.shields.io/badge/license-ISC-blue)](#license)
 [![Stars](https://img.shields.io/github/stars/zamansheikh/git-time-changer?style=flat&logo=github)](https://github.com/zamansheikh/git-time-changer/stargazers)
 
-<img src="docs/images/art.svg" alt="gtc art Hello!: the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in bright green on the updated graph" width="100%">
+<img src="docs/images/art.svg" alt="gtc art Hello: the text sweeps across the calendar preview in purple, then the commits are created and Hello appears in bright green on the updated graph" width="100%">
 
 ```bash
-npx git-time-changer@latest art "Hello!"
+npx git-time-changer@latest art "Hello"
 ```
 
 </div>
@@ -33,7 +33,7 @@ npx git-time-changer@latest art "Hello!"
 
 ## Features
 
-- **Text art.** `gtc art "Hello!"` writes words on your graph with a built-in 7-cell font: capitals, lowercase, digits, punctuation, accents and symbols like ♥ ★. The text goes in the quietest stretch of your year, with enough commits per cell to show in the darkest green.
+- **Text art.** `gtc art "Hello"` writes words on your graph with a built-in 7-cell font: capitals, lowercase, digits, punctuation, accents and symbols like ♥ ★. The text goes in the quietest stretch of your year, with enough commits per cell to show in the darkest green.
 - **Empty-day finder.** Reads your contribution calendar from GitHub and from local git history, highlights every day without contributions, and lists them month by month.
 - **Fill only the gaps.** Commits land on empty days and nowhere else. Choose how many commits per day, what share of the gaps to fill, and whether to skip weekends.
 - **Preview before writing.** Every command first draws the calendar with the new commits in purple. `--dry-run` stops there.
@@ -50,12 +50,13 @@ npx git-time-changer@latest art "Hello!"
 **2. Run GitTimeChanger inside it:**
 
 ```bash
-cd <your-repo>
-npx git-time-changer@latest art "Hello!" --dry-run   # preview text on your graph
-npx git-time-changer@latest                          # or open the interactive mode
+cd path/to/your-repo
+npx git-time-changer@latest art "Hello" --dry-run
 ```
 
-The interactive mode finds your GitHub username, draws your graph, and lets you pick: draw text, fill empty days, and more.
+`--dry-run` previews the text on your graph without committing anything. To open the interactive mode instead, run `npx git-time-changer@latest` on its own. It finds your GitHub username, draws your graph and lets you choose what to do: draw text, fill empty days, and more.
+
+These commands work the same in every common terminal: zsh and bash on macOS and Linux, fish, PowerShell and Windows Command Prompt.
 
 ### Install
 
@@ -63,7 +64,7 @@ The interactive mode finds your GitHub username, draws your graph, and lets you 
 | --- | --- | --- |
 | No install | `npx git-time-changer@latest` | — |
 | Global install | `npm install -g git-time-changer@latest` | `gtc` in any repo |
-| From source | `git clone https://github.com/zamansheikh/git-time-changer.git && cd git-time-changer && npm link` | `gtc` in any repo |
+| From source | `git clone https://github.com/zamansheikh/git-time-changer.git`, then `npm link` inside the new folder | `gtc` in any repo |
 
 `@latest` makes `npx` fetch the newest version even if an older one is installed. Run the global install command again to update `gtc`. Every command takes `--repo <path>` if you'd rather not `cd` into the target repo.
 
@@ -72,9 +73,13 @@ The interactive mode finds your GitHub username, draws your graph, and lets you 
 ### Draw text on your graph
 
 ```bash
-gtc art "Hello!" --dry-run    # preview where the text goes
-gtc art "Hello!" --push       # draw it and push
+gtc art "Hello" --dry-run
+gtc art "Hello" --push
 ```
+
+The first command previews where the text goes. The second draws it and pushes.
+
+**Text with `!` or `$`?** Wrap it in single quotes: `gtc art 'Hi!'` works in zsh, bash, fish and PowerShell. Inside double quotes, zsh and bash treat `!` as a history command, so instead of running, the terminal waits at a `>` or `dquote>` prompt (press Ctrl+C to get out). In Windows Command Prompt, use double quotes: `gtc art "Hi!"`.
 
 The graph is 7 cells tall (Sunday to Saturday) and about 52 weeks wide, so short words work best: around 8 to 10 characters fit in a year. GitTimeChanger:
 
@@ -109,9 +114,11 @@ Amber squares are days without contributions. `--list` prints them all, grouped 
 ### Fill only those days
 
 ```bash
-gtc fill --commits 1-3 --skip-weekends --dry-run   # preview
-gtc fill --commits 1-3 --skip-weekends --push      # do it
+gtc fill --commits 1-3 --skip-weekends --dry-run
+gtc fill --commits 1-3 --skip-weekends --push
 ```
+
+Preview first, then run it again with `--push` to create the commits and push them.
 
 <img src="docs/images/fill.svg" alt="gtc fill output: a preview of the new commits in purple on empty weekdays, then the commits being created and pushed" width="100%">
 
@@ -151,27 +158,46 @@ gtc fill --commits 1-3 --skip-weekends --push      # do it
 
 ### Recipes
 
+Write on last year's graph, with exactly 5 commits per lit cell:
+
 ```bash
-# Write on last year's graph, with exactly 5 commits per lit cell
 gtc art "I ♥ code" --year 2025 -n 5
+```
 
-# Pick where the text starts
-gtc art "Hi!" --start 2026-03-01 --dry-run
+Pick where the text starts:
 
-# Fill every gap in 2025 with 2–5 commits each, then push
+```bash
+gtc art "Hi" --start 2026-03-01 --dry-run
+```
+
+Fill every gap in 2025 with 2–5 commits each, then push:
+
+```bash
 gtc fill --year 2025 --commits 2-5 --push
+```
 
-# Fill about 80% of the gaps on weekdays only, so the graph keeps a few empty days
+Fill about 80% of the gaps on weekdays only, so the graph keeps a few empty days:
+
+```bash
 gtc fill --density 80 --skip-weekends
+```
 
-# The old indexRan.js behaviour: 300 commits on random days of the last year
+The old indexRan.js behaviour, 300 commits on random days of the last year:
+
+```bash
 gtc random -n 300
+```
 
-# A few commits on specific days
+A few commits on specific days:
+
+```bash
 gtc date 2026-10-28 2026-10-30..2026-10-31 -n 3
+```
 
-# Empty days as JSON, for your own scripts
-gtc calendar --user octocat --json | jq '.emptyDays'
+Empty days as JSON, for your own scripts (needs [jq](https://jqlang.org)):
+
+```bash
+gtc calendar --user octocat --json | jq .emptyDays
 ```
 
 ## How it works
@@ -201,23 +227,26 @@ After pushing, the graph can take a few minutes to update.
 
 Each run tells you how many commits it created. To remove them:
 
-```bash
-# Not pushed yet: drop the last N commits and keep any other local changes
-git reset --keep HEAD~N
+Not pushed yet: drop the last N commits and keep any other local changes.
 
-# Already pushed: reset, then force-push (rewrites history on GitHub)
-git reset --keep HEAD~N && git push --force-with-lease
+```bash
+git reset --keep HEAD~N
+```
+
+Already pushed: reset, then force-push. This rewrites history on GitHub.
+
+```bash
+git reset --keep HEAD~N
+git push --force-with-lease
 ```
 
 Deleting the repository on GitHub also removes its commits from your graph.
 
 ## Development
 
-```bash
-npm test              # unit tests (node:test, no dependencies)
-npm run showcase      # regenerate the screenshots in docs/images/
-npm start -- --help   # run the CLI from source
-```
+- `npm test` runs the unit tests (node:test, no dependencies).
+- `npm run showcase` regenerates the screenshots in `docs/images/`.
+- `node bin/gtc.js --help` runs the CLI from source.
 
 ```text
 bin/gtc.js                  executable (npm bin: gtc, git-time-changer)

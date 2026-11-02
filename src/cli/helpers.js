@@ -62,4 +62,42 @@ function checkDays(days, today) {
   if (future.length) throw new UserError(`${dates.formatDay(future[0])} is in the future. Pick dates up to today.`);
 }
 
-module.exports = { UserError, GITHUB_LOGIN, displayPath, expandHome, parsed, check, dataFile, checkDays };
+// zsh (by default) and Windows cmd don't treat # as a comment, so a copied
+// example like `gtc fill --push   # do it` reaches gtc as extra arguments.
+// Cut from a lone "#" onwards. A "#" right after the command, or at the very
+// end, is kept because it may be the text to draw.
+function splitShellComment(argv) {
+  const at = argv.findIndex((arg, i) => arg === '#' && i >= 2 && i < argv.length - 1);
+  if (at === -1) return { argv, comment: '' };
+  return { argv: argv.slice(0, at), comment: argv.slice(at).join(' ') };
+}
+
+// Quote pairs a shell can leave around the text: cmd passes 'Hi' through with
+// its quotes, and chat apps turn typed quotes into curly ones.
+const QUOTE_PAIRS = [
+  ["'", "'"],
+  ['‘', '’'],
+  ['“', '”'],
+];
+
+// The text for gtc art, with common quoting slips undone:
+// bash keeps the backslash in "Hi\!", so \! becomes !.
+function artText(words) {
+  let text = words.join(' ').trim().replace(/\\!/g, '!');
+  const pair = QUOTE_PAIRS.find(([open, close]) => text.length >= 2 && text.startsWith(open) && text.endsWith(close));
+  if (pair) text = text.slice(1, -1).trim();
+  return text;
+}
+
+module.exports = {
+  UserError,
+  GITHUB_LOGIN,
+  displayPath,
+  expandHome,
+  parsed,
+  check,
+  dataFile,
+  checkDays,
+  splitShellComment,
+  artText,
+};

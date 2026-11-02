@@ -202,13 +202,16 @@ function artCounts() {
 
 const artGraphData = artCounts();
 const artGraph = { counts: artGraphData, github: artGraphData, local: new Map(), via: 'api', warnings: [] };
-const artPlan = planner.planArt({ text: 'Hello!', counts: artGraphData, ...RANGE, today: TODAY, rng: planner.createRng('7') });
+// No "!" here: the command is shown in the README, and "!" inside double
+// quotes breaks it in zsh and bash.
+const ART_TEXT = 'Hello';
+const artPlan = planner.planArt({ text: ART_TEXT, counts: artGraphData, ...RANGE, today: TODAY, rng: planner.createRng('7') });
 const artAfter = { ...artGraph, counts: planner.applyPlan(artGraphData, artPlan) };
 const artCreate = `Create ${term.plural(artPlan.commits, 'commit')} in contributions?`;
 
 function sceneArtPreview() {
   const lines = [
-    shell('gtc art "Hello!" --push'),
+    shell(`gtc art "${ART_TEXT}" --push`),
     ok(`Loaded ${describeSources(ctx, artGraph)}`),
     ...capture(() => output.printContext(ctx)),
     ...capture(() => output.showGraph(ctx, artGraph, { plan: artPlan, title: 'Preview' })),
@@ -247,7 +250,7 @@ const files = {
     [sceneArtPreview(), sceneArtDone()],
     [7, 6],
     'gtc art — ~/code/contributions',
-    'gtc art "Hello!": the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in green on the updated graph.',
+    `gtc art "${ART_TEXT}": the text sweeps across the calendar preview in purple, then the commits are created and ${ART_TEXT} appears in green on the updated graph.`,
   ),
   'font.svg': fontSvg(
     [
