@@ -2,17 +2,21 @@
 
 # GitTimeChanger
 
-**Find the empty days on your GitHub contribution graph and fill only those, or write words across it.**
+**Write words across your GitHub contribution graph, or fill only the days you missed.**
 
-A zero-dependency terminal tool that reads your real contribution calendar, shows you exactly which days have no commits, and previews every change before it creates backdated commits: on empty days only, or as pixel text like **Hello!**.
+A zero-dependency terminal tool that draws pixel text like **Hello!** on your contribution calendar, finds the days with no commits, and previews every change before it creates a single backdated commit.
 
 [![npm](https://img.shields.io/npm/v/git-time-changer?logo=npm&color=cb3837)](https://www.npmjs.com/package/git-time-changer)
 [![Node.js ≥ 18.3](https://img.shields.io/badge/node-%E2%89%A518.3-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![Zero dependencies](https://img.shields.io/badge/dependencies-0-2ea44f)](package.json)
 [![License: ISC](https://img.shields.io/badge/license-ISC-blue)](#license)
-[![Stars](https://img.shields.io/github/stars/zamansheikh/GitTimeChanger?style=flat&logo=github)](https://github.com/zamansheikh/GitTimeChanger/stargazers)
+[![Stars](https://img.shields.io/github/stars/zamansheikh/git-time-changer?style=flat&logo=github)](https://github.com/zamansheikh/git-time-changer/stargazers)
 
-<img src="docs/images/demo.svg" alt="GitTimeChanger interactive session: reading the graph, previewing the empty days being filled, then committing and pushing" width="100%">
+<img src="docs/images/art.svg" alt="gtc art Hello!: the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in bright green on the updated graph" width="100%">
+
+```bash
+npx git-time-changer@latest art "Hello!"
+```
 
 </div>
 
@@ -29,9 +33,9 @@ A zero-dependency terminal tool that reads your real contribution calendar, show
 
 ## Features
 
+- **Text art.** `gtc art "Hello!"` writes words on your graph with a built-in 7-cell font: capitals, lowercase, digits, punctuation, accents and symbols like ♥ ★. The text goes in the quietest stretch of your year, with enough commits per cell to show in the darkest green.
 - **Empty-day finder.** Reads your contribution calendar from GitHub and from local git history, highlights every day without contributions, and lists them month by month.
 - **Fill only the gaps.** Commits land on empty days and nowhere else. Choose how many commits per day, what share of the gaps to fill, and whether to skip weekends.
-- **Text art.** `gtc art "Hello!"` writes words on your graph with a built-in 7-cell font: capitals, lowercase, digits, punctuation and accents. The text goes in the quietest stretch of your year, with enough commits per cell to show in the darkest green.
 - **Preview before writing.** Every command first draws the calendar with the new commits in purple. `--dry-run` stops there.
 - **Interactive terminal UI.** Arrow-key menus, a live progress bar, and an optional push at the end.
 - **Commits land on the right square.** Each commit gets a time between 09:00 and 23:00 when your local date and the UTC date are the same, so time zones can't push it onto a neighbouring square.
@@ -41,28 +45,56 @@ A zero-dependency terminal tool that reads your real contribution calendar, show
 
 ## Quick start
 
-**1. Pick a repository for the commits.** Any repo you own on GitHub works. A fresh one keeps things tidy. Don't use a fork: GitHub doesn't count commits made in forks. A private repo works if your profile shows private contributions.
+**1. Pick a repository for the commits.** Any repo you own on GitHub works. A fresh one keeps things tidy, and text reads best on a quiet graph. Don't use a fork: GitHub doesn't count commits made in forks. A private repo works if your profile shows private contributions.
 
 **2. Run GitTimeChanger inside it:**
 
 ```bash
 cd <your-repo>
-npx git-time-changer
+npx git-time-changer@latest art "Hello!" --dry-run   # preview text on your graph
+npx git-time-changer@latest                          # or open the interactive mode
 ```
 
-That opens the interactive mode. It finds your GitHub username, draws your graph, and asks what to do.
+The interactive mode finds your GitHub username, draws your graph, and lets you pick: draw text, fill empty days, and more.
 
 ### Install
 
 | How | Command | Then run |
 | --- | --- | --- |
-| No install | `npx git-time-changer` | — |
-| Global install | `npm install -g git-time-changer` | `gtc` in any repo |
-| From source | `git clone https://github.com/zamansheikh/GitTimeChanger.git && cd GitTimeChanger && npm link` | `gtc` in any repo |
+| No install | `npx git-time-changer@latest` | — |
+| Global install | `npm install -g git-time-changer@latest` | `gtc` in any repo |
+| From source | `git clone https://github.com/zamansheikh/git-time-changer.git && cd git-time-changer && npm link` | `gtc` in any repo |
 
-Every command takes `--repo <path>` if you'd rather not `cd` into the target repo.
+`@latest` makes `npx` fetch the newest version even if an older one is installed. Run the global install command again to update `gtc`. Every command takes `--repo <path>` if you'd rather not `cd` into the target repo.
 
 ## Usage
+
+### Draw text on your graph
+
+```bash
+gtc art "Hello!" --dry-run    # preview where the text goes
+gtc art "Hello!" --push       # draw it and push
+```
+
+The graph is 7 cells tall (Sunday to Saturday) and about 52 weeks wide, so short words work best: around 8 to 10 characters fit in a year. GitTimeChanger:
+
+- **places the text** in the stretch of full weeks with the fewest existing contributions, so other activity doesn't blur the letters. Use `--start <date>` to pick the spot yourself, or `--year 2025` to draw on another year's graph;
+- **sets the brightness** by adding just enough commits to each lit cell to reach the darkest green, based on how busy your graph already is. Use `-n 3` for a fixed number per cell instead;
+- **warns you** when days around the letters already have contributions, so the text won't look perfectly clean.
+
+Every character in the font:
+
+<img src="docs/images/font.svg" alt="The gtc art font: capitals A to Z, lowercase a to z, digits, punctuation, symbols and accented letters, each drawn as contribution-graph cells" width="100%">
+
+Lowercase letters have ascenders, and characters like é, ñ and ü keep their accents. Capitals with accents are drawn without them (É becomes E) because a capital already uses all 7 rows. Curly quotes, dashes, ß and similar characters are swapped for close equivalents.
+
+### Interactive mode
+
+```bash
+gtc
+```
+
+<img src="docs/images/demo.svg" alt="GitTimeChanger interactive session: reading the graph, previewing the empty days being filled, then committing and pushing" width="100%">
 
 ### See your empty days
 
@@ -83,37 +115,16 @@ gtc fill --commits 1-3 --skip-weekends --push      # do it
 
 <img src="docs/images/fill.svg" alt="gtc fill output: a preview of the new commits in purple on empty weekdays, then the commits being created and pushed" width="100%">
 
-### Draw text on your graph
-
-```bash
-gtc art "Hello!" --dry-run    # preview where the text goes
-gtc art "Hello!" --push       # draw it and push
-```
-
-<img src="docs/images/art.svg" alt="gtc art Hello!: the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in bright green on the updated graph" width="100%">
-
-The graph is 7 cells tall (Sunday to Saturday) and about 52 weeks wide, so short words work best: around 8 to 10 characters fit in a year. GitTimeChanger:
-
-- **places the text** in the stretch of full weeks with the fewest existing contributions, so other activity doesn't blur the letters. Use `--start <date>` to pick the spot yourself, or `--year 2025` to draw on another year's graph;
-- **sets the brightness** by adding just enough commits to each lit cell to reach the darkest green, based on how busy your graph already is. Use `-n 3` for a fixed number per cell instead;
-- **warns you** when days around the letters already have contributions, so the text won't look perfectly clean.
-
-Every character in the font:
-
-<img src="docs/images/font.svg" alt="The gtc art font: capitals A to Z, lowercase a to z, digits, punctuation, symbols and accented letters, each drawn as contribution-graph cells" width="100%">
-
-Lowercase letters have ascenders, and characters like é, ñ and ü keep their accents. Capitals with accents are drawn without them (É becomes E) because a capital already uses all 7 rows. Curly quotes, dashes, ß and similar characters are swapped for close equivalents.
-
 ### Commands
 
 | Command | What it does |
 | --- | --- |
 | `gtc` | Interactive mode: graph, menu, preview, commit, push. |
+| `gtc art <text>` | Write text across the graph. Aliases: `draw`, `text`. |
 | `gtc calendar` | Show the graph, stats and empty days. Aliases: `cal`, `show`, `gaps`. |
 | `gtc fill` | Commit only on days with no contributions. |
 | `gtc random` | Spread a total number of commits over random days in the range. |
 | `gtc date <day…>` | Commit on specific days: `2026-10-30`, `2026-10-01..2026-10-07`, `today`, `yesterday`. |
-| `gtc art <text>` | Write text across the graph. Aliases: `draw`, `text`. |
 
 ### Options
 
@@ -141,6 +152,12 @@ Lowercase letters have ascenders, and characters like é, ñ and ü keep their a
 ### Recipes
 
 ```bash
+# Write on last year's graph, with exactly 5 commits per lit cell
+gtc art "I ♥ code" --year 2025 -n 5
+
+# Pick where the text starts
+gtc art "Hi!" --start 2026-03-01 --dry-run
+
 # Fill every gap in 2025 with 2–5 commits each, then push
 gtc fill --year 2025 --commits 2-5 --push
 
@@ -152,12 +169,6 @@ gtc random -n 300
 
 # A few commits on specific days
 gtc date 2026-10-28 2026-10-30..2026-10-31 -n 3
-
-# Write on last year's graph, with exactly 5 commits per lit cell
-gtc art "I ♥ code" --year 2025 -n 5
-
-# Pick where the text starts
-gtc art "Hi!" --start 2026-03-01 --dry-run
 
 # Empty days as JSON, for your own scripts
 gtc calendar --user octocat --json | jq '.emptyDays'

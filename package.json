@@ -1,7 +1,7 @@
 {
   "name": "git-time-changer",
   "version": "2.1.0",
-  "description": "Find the empty days on your GitHub contribution graph and fill only those, or write text across it, from a friendly terminal UI.",
+  "description": "Write words across your GitHub contribution graph, or fill only the days you missed, from a friendly terminal UI.",
   "main": "src/cli/index.js",
   "bin": {
     "gtc": "bin/gtc.js",
@@ -39,12 +39,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zamansheikh/GitTimeChanger.git"
+    "url": "git+https://github.com/zamansheikh/git-time-changer.git"
   },
   "bugs": {
-    "url": "https://github.com/zamansheikh/GitTimeChanger/issues"
+    "url": "https://github.com/zamansheikh/git-time-changer/issues"
   },
-  "homepage": "https://github.com/zamansheikh/GitTimeChanger#readme",
+  "homepage": "https://github.com/zamansheikh/git-time-changer#readme",
   "funding": "https://www.buymeacoffee.com/zamansheikh",
   "author": "Zaman Sheikh",
   "license": "ISC"

@@ -7,7 +7,7 @@
 const { execFile } = require('node:child_process');
 const { formatDay, parts, fromParts } = require('../core/dates');
 
-const USER_AGENT = 'git-time-changer (+https://github.com/zamansheikh/GitTimeChanger)';
+const USER_AGENT = 'git-time-changer (+https://github.com/zamansheikh/git-time-changer)';
 const TIMEOUT_MS = 20_000;
 
 class SourceError extends Error {

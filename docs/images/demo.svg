@@ -82,13 +82,7 @@
 <path d="M618.4 77.2H626.8" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M626.8 77.2H635.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M635.2 77.2H643.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M643.6 77.2H652" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M652 77.2H660.4" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M660.4 77.2H668.8" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M668.8 77.2H677.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M677.2 77.2H685.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M685.6 77.2H694" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M694 77.2H694Q698.2 77.2 698.2 81.4V85.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
+<path d="M643.6 77.2H643.6Q647.8 77.2 647.8 81.4V85.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M43 85.6V102.4" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <rect x="62" y="87.8" width="12.4" height="12.4" rx="2.4" fill="#39d353"/>
 <rect x="78.8" y="87.8" width="12.4" height="12.4" rx="2.4" fill="#006d32"/>
@@ -96,25 +90,23 @@
 <rect x="112.4" y="87.8" width="12.4" height="12.4" rx="2.4" fill="#26a641"/>
 <text x="148 156.4 164.8 173.2 181.6 190 198.4 206.8 215.2 223.6 232 240.4 248.8 257.2" y="99.04" fill="#e6edf3" font-weight="700">GitTimeChanger</text>
 <text x="274 282.4 290.8 299.2 307.6 316" y="99.04" fill="#e6edf3" opacity="0.55">v2.1.0</text>
-<path d="M698.2 85.6V102.4" stroke="#6e7681" stroke-width="1.2" fill="none"/>
+<path d="M647.8 85.6V102.4" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M43 102.4V119.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <rect x="62" y="104.6" width="12.4" height="12.4" rx="2.4" fill="#0e4429"/>
 <rect x="78.8" y="104.6" width="12.4" height="12.4" rx="2.4" fill="#26a641"/>
 <rect x="112.4" y="104.6" width="12.4" height="12.4" rx="2.4" fill="#39d353"/>
-<text x="148 156.4 164.8 173.2" y="115.84" fill="#e6edf3" opacity="0.55">Fill</text>
-<text x="190 198.4 206.8" y="115.84" fill="#e6edf3" opacity="0.55">the</text>
-<text x="223.6 232 240.4 248.8 257.2" y="115.84" fill="#e6edf3" opacity="0.55">empty</text>
-<text x="274 282.4 290.8 299.2" y="115.84" fill="#e6edf3" opacity="0.55">days</text>
-<text x="316 324.4" y="115.84" fill="#e6edf3" opacity="0.55">on</text>
-<text x="341.2 349.6 358 366.4" y="115.84" fill="#e6edf3" opacity="0.55">your</text>
-<text x="383.2 391.6 400 408.4 416.8 425.2" y="115.84" fill="#e6edf3" opacity="0.55">GitHub</text>
-<text x="442 450.4 458.8 467.2 475.6 484" y="115.84" fill="#e6edf3" opacity="0.55">graph,</text>
-<text x="500.8 509.2" y="115.84" fill="#e6edf3" opacity="0.55">or</text>
-<text x="526 534.4 542.8 551.2 559.6" y="115.84" fill="#e6edf3" opacity="0.55">write</text>
-<text x="576.4 584.8 593.2 601.6 610" y="115.84" fill="#e6edf3" opacity="0.55">words</text>
-<text x="626.8 635.2" y="115.84" fill="#e6edf3" opacity="0.55">on</text>
-<text x="652 660.4 668.8" y="115.84" fill="#e6edf3" opacity="0.55">it.</text>
-<path d="M698.2 102.4V119.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
+<text x="148 156.4 164.8 173.2 181.6" y="115.84" fill="#e6edf3" opacity="0.55">Write</text>
+<text x="198.4 206.8 215.2 223.6 232" y="115.84" fill="#e6edf3" opacity="0.55">words</text>
+<text x="248.8 257.2" y="115.84" fill="#e6edf3" opacity="0.55">on</text>
+<text x="274 282.4 290.8 299.2" y="115.84" fill="#e6edf3" opacity="0.55">your</text>
+<text x="316 324.4 332.8 341.2 349.6 358" y="115.84" fill="#e6edf3" opacity="0.55">GitHub</text>
+<text x="374.8 383.2 391.6 400 408.4 416.8" y="115.84" fill="#e6edf3" opacity="0.55">graph,</text>
+<text x="433.6 442" y="115.84" fill="#e6edf3" opacity="0.55">or</text>
+<text x="458.8 467.2 475.6 484" y="115.84" fill="#e6edf3" opacity="0.55">fill</text>
+<text x="500.8 509.2 517.6" y="115.84" fill="#e6edf3" opacity="0.55">its</text>
+<text x="534.4 542.8 551.2 559.6 568" y="115.84" fill="#e6edf3" opacity="0.55">empty</text>
+<text x="584.8 593.2 601.6 610 618.4" y="115.84" fill="#e6edf3" opacity="0.55">days.</text>
+<path d="M647.8 102.4V119.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M43 119.2V123.4Q43 127.6 47.2 127.6H47.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M47.2 127.6H55.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M55.6 127.6H64" stroke="#6e7681" stroke-width="1.2" fill="none"/>
@@ -187,13 +179,7 @@
 <path d="M618.4 127.6H626.8" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M626.8 127.6H635.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M635.2 127.6H643.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M643.6 127.6H652" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M652 127.6H660.4" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M660.4 127.6H668.8" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M668.8 127.6H677.2" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M677.2 127.6H685.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M685.6 127.6H694" stroke="#6e7681" stroke-width="1.2" fill="none"/>
-<path d="M698.2 119.2V123.4Q698.2 127.6 694 127.6H694" stroke="#6e7681" stroke-width="1.2" fill="none"/>
+<path d="M647.8 119.2V123.4Q647.8 127.6 643.6 127.6H643.6" stroke="#6e7681" stroke-width="1.2" fill="none"/>
 <path d="M39 161.4L41.8 164.2L47.2 157.8" stroke="#3fb950" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 <text x="55.6 64 72.4 80.8 89.2 97.6" y="166.24" fill="#e6edf3" font-weight="700">GitHub</text>
 <text x="114.4 122.8 131.2 139.6 148 156.4 164.8 173.2" y="166.24" fill="#e6edf3" font-weight="700">username</text>

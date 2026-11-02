@@ -18,7 +18,7 @@ function printBanner() {
     list.map((k) => (k === 'e' ? theme.empty : k === 'p' ? theme.planned : theme.level[k])(sym.cell)).join(' ');
   const lines = [
     `${cells([4, 2, 'e', 3])}   ${c.bold('GitTimeChanger')} ${c.dim(`v${pkg.version}`)}`,
-    `${cells([1, 3, 'p', 4])}   ${c.dim('Fill the empty days on your GitHub graph, or write words on it.')}`,
+    `${cells([1, 3, 'p', 4])}   ${c.dim('Write words on your GitHub graph, or fill its empty days.')}`,
   ];
   log.line();
   log.lines(term.box(lines).map((line) => `  ${line}`));
