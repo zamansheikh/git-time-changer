@@ -16,6 +16,7 @@ function levelScale(values) {
   const [q1, q2, q3] = [q(0.25), q(0.5), q(0.75)];
   return (count) => {
     if (count <= 0) return 0;
+    if (count >= max) return 4;
     if (count <= q1) return 1;
     if (count <= q2) return 2;
     if (count <= q3) return 3;

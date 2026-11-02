@@ -1,7 +1,7 @@
 {
   "name": "git-time-changer",
-  "version": "2.0.0",
-  "description": "Find the empty days on your GitHub contribution graph and fill only those, from a friendly terminal UI.",
+  "version": "2.1.0",
+  "description": "Find the empty days on your GitHub contribution graph and fill only those, or write text across it, from a friendly terminal UI.",
   "main": "src/cli/index.js",
   "bin": {
     "gtc": "bin/gtc.js",
@@ -30,7 +30,12 @@
     "backdate",
     "cli",
     "terminal",
-    "tui"
+    "tui",
+    "commit-art",
+    "contribution-art",
+    "github-art",
+    "pixel-art",
+    "text-art"
   ],
   "repository": {
     "type": "git",

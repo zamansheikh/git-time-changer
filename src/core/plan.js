@@ -2,7 +2,8 @@
 
 // Builds commit plans (which days, how many commits) and their timestamps.
 
-const { formatDay, isWeekend, localToday } = require('./dates');
+const { formatDay, isWeekend, localToday, weekday } = require('./dates');
+const { normalize, renderText } = require('./font');
 
 // Small seeded PRNG (mulberry32) so a plan can be reproduced with --seed.
 function createRng(seed = Date.now()) {
@@ -103,6 +104,99 @@ function planDates({ days, perDay, rng }) {
   return { ...finalize(plan, 'date'), candidates: days.length };
 }
 
+// ─── Text art ───────────────────────────────────────────────────────────────
+
+// Full weeks (Sunday to Saturday) inside [from, min(to, today)].
+function fullWeeks(from, to, today) {
+  const first = from + ((7 - weekday(from)) % 7);
+  const lastDay = Math.min(to, today);
+  const lastSaturday = lastDay - ((weekday(lastDay) + 1) % 7);
+  return { first, weeks: Math.max(0, Math.floor((lastSaturday - first + 1) / 7)) };
+}
+
+// Commits a lit cell needs so the letters land in the darkest green (at least 4).
+// When the letters are a small share of your active days, beating 90% of them is
+// enough. When they are a big share (a quiet graph), they must match the busiest
+// day, because the darkest level is the top quarter of active days.
+function artTarget(counts, from, to, today, litCells = 0) {
+  const values = [];
+  for (let day = from; day <= Math.min(to, today); day++) {
+    const n = counts.get(formatDay(day)) || 0;
+    if (n > 0) values.push(n);
+  }
+  if (!values.length) return 4;
+  values.sort((a, b) => a - b);
+  const max = values[values.length - 1];
+  const p90 = values[Math.min(values.length - 1, Math.floor(values.length * 0.9))];
+  const share = litCells / (values.length + litCells);
+  return Math.max(4, share >= 0.2 ? max : p90 + 1);
+}
+
+// Days in the text's box that already have contributions but are not part of a letter.
+function artNoise(columns, origin, counts) {
+  let noise = 0;
+  columns.forEach((column, x) => {
+    column.forEach((lit, y) => {
+      if (!lit && (counts.get(formatDay(origin + x * 7 + y)) || 0) > 0) noise++;
+    });
+  });
+  return noise;
+}
+
+/**
+ * Draws text on the graph. Without `start`, the text goes in the quietest
+ * stretch of full weeks in the range (ties go to the middle). Without
+ * `perCell`, each lit cell gets enough commits to reach the darkest green.
+ */
+function planArt({ text, counts, from, to, today, start, perCell = null, rng }) {
+  const columns = renderText(text);
+  const width = columns.length;
+  if (!width) throw new RangeError('Give some text to draw.');
+  let origin;
+  if (start !== undefined) {
+    origin = start - weekday(start);
+  } else {
+    const { first, weeks } = fullWeeks(from, to, today);
+    if (width > weeks) {
+      throw new RangeError(
+        `"${normalize(text)}" is ${width} weeks wide, but only ${weeks} full weeks fit in this range. ` +
+          'Use shorter text or a longer range.',
+      );
+    }
+    const middle = Math.floor((weeks - width) / 2);
+    let best = null;
+    for (let offset = 0; offset <= weeks - width; offset++) {
+      const candidate = first + offset * 7;
+      const score = artNoise(columns, candidate, counts) * 1000 + Math.abs(offset - middle);
+      if (!best || score < best.score) best = { origin: candidate, score };
+    }
+    origin = best.origin;
+  }
+  const lit = [];
+  columns.forEach((column, x) => column.forEach((on, y) => on && lit.push(origin + x * 7 + y)));
+  const late = lit.filter((day) => day > today);
+  if (late.length) {
+    throw new RangeError(`The text would run into the future (up to ${formatDay(late[late.length - 1])}). Start it earlier.`);
+  }
+  const target = perCell ? null : artTarget(counts, from, to, today, lit.length);
+  const plan = new Map();
+  for (const day of lit) {
+    const key = formatDay(day);
+    const n = perCell ? randInt(rng, perCell.min, perCell.max) : Math.max(1, target - (counts.get(key) || 0));
+    plan.set(key, n);
+  }
+  return {
+    ...finalize(plan, 'art'),
+    candidates: lit.length,
+    text: normalize(text),
+    width,
+    origin,
+    end: origin + width * 7 - 1,
+    target,
+    noise: artNoise(columns, origin, counts),
+  };
+}
+
 /**
  * Local-time window (minutes after midnight) for commits on a day.
  * The window keeps the UTC date equal to the local date, so the commit lands on the
@@ -163,6 +257,9 @@ module.exports = {
   planFill,
   planRandom,
   planDates,
+  planArt,
+  fullWeeks,
+  artTarget,
   dayWindow,
   schedule,
   applyPlan,

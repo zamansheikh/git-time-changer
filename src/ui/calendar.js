@@ -10,10 +10,12 @@ const { countOf, levelScale } = require('../core/stats');
 const ROW_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 const LABEL_WIDTH = 4;
 
+// kind: 'planned' | 'empty' (highlighted) | 'none' (plain empty, like GitHub) | 'level'
 function glyph(kind, level) {
   const color = getDepth() > 1;
   if (kind === 'planned') return color ? theme.planned(sym.cell) : '+';
   if (kind === 'empty') return color ? theme.empty(sym.cell) : '·';
+  if (kind === 'none') return color ? theme.none(sym.cell) : '·';
   return color ? theme.level[level](sym.cell) : sym.cell;
 }
 
@@ -57,8 +59,9 @@ function monthHeader(start, w0, w1, from, to, cellWidth) {
 /**
  * Renders the heatmap as lines of text.
  * plan: optional Map of 'YYYY-MM-DD' -> commits that will be added (shown in purple).
+ * highlightEmpty: show days without contributions in amber (false: plain gray, like GitHub).
  */
-function renderCalendar({ counts, from, to, today, plan = null, maxColumns = columns(), indent = '  ' }) {
+function renderCalendar({ counts, from, to, today, plan = null, highlightEmpty = true, maxColumns = columns(), indent = '  ' }) {
   const last = Math.min(to, today);
   const start = from - weekday(from);
   const end = to + (6 - weekday(to));
@@ -83,7 +86,7 @@ function renderCalendar({ counts, from, to, today, plan = null, maxColumns = col
           const count = counts.get(key) || 0;
           if (plan && plan.has(key)) cell = glyph('planned');
           else if (count > 0) cell = glyph('level', scale(count));
-          else cell = glyph('empty');
+          else cell = glyph(highlightEmpty ? 'empty' : 'none');
         }
         row += cell;
         if (cellWidth === 2 && w < w1 - 1) row += ' ';
@@ -94,13 +97,14 @@ function renderCalendar({ counts, from, to, today, plan = null, maxColumns = col
   return lines;
 }
 
-function renderLegend({ plan = false, indent = '  ' } = {}) {
+function renderLegend({ plan = false, highlightEmpty = true, indent = '  ' } = {}) {
   const color = getDepth() > 1;
-  const levels = color ? [1, 2, 3, 4].map((l) => glyph('level', l)).join(' ') : sym.cell;
-  const items = [
-    `${c.dim('Less')} ${levels} ${c.dim('More')}`,
-    `${glyph('empty')} ${c.dim('No contributions')}`,
-  ];
+  const steps = highlightEmpty ? [1, 2, 3, 4] : [0, 1, 2, 3, 4];
+  const levels = color
+    ? steps.map((l) => (l === 0 ? glyph('none') : glyph('level', l))).join(' ')
+    : sym.cell;
+  const items = [`${c.dim('Less')} ${levels} ${c.dim('More')}`];
+  if (highlightEmpty) items.push(`${glyph('empty')} ${c.dim('No contributions')}`);
   if (plan) items.push(`${glyph('planned')} ${c.dim('New commits')}`);
   return indent + ' '.repeat(LABEL_WIDTH) + items.join('     ');
 }

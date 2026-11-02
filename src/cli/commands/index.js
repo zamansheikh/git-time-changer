@@ -7,4 +7,5 @@ module.exports = {
   fill: { aliases: [], ...require('./fill') },
   random: { aliases: [], ...require('./random') },
   date: { aliases: ['on'], ...require('./date') },
+  art: { aliases: ['draw', 'text'], ...require('./art') },
 };

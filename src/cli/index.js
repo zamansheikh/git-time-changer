@@ -21,6 +21,7 @@ const OPTIONS = {
   from: { type: 'string' },
   to: { type: 'string' },
   commits: { type: 'string', short: 'n' },
+  start: { type: 'string' },
   density: { type: 'string' },
   'skip-weekends': { type: 'boolean' },
   'only-empty': { type: 'boolean' },
@@ -80,7 +81,7 @@ async function main(argv = process.argv.slice(2)) {
     const found = findCommand(name);
     if (!found) throw new UserError(`Unknown command "${name}".`, 'Run gtc --help to see the commands.');
     await found.command.run(opts, rest);
-    if (rest.length && found.key !== 'date') log.warn(`Ignored extra arguments: ${rest.join(' ')}`);
+    if (rest.length && !['date', 'art'].includes(found.key)) log.warn(`Ignored extra arguments: ${rest.join(' ')}`);
   } catch (error) {
     if (error instanceof prompt.CancelledError) {
       log.line();

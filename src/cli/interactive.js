@@ -27,7 +27,7 @@ async function previewAndRun(ctx, graph, plan, info) {
   log.line();
   if (!result || !result.done) return graph;
   const updated = applyCommitted(graph, result.committed);
-  showGraph(ctx, updated, { title: 'Updated graph' });
+  showGraph(ctx, updated, { title: 'Updated graph', art: plan.kind === 'art' });
   log.line();
   return updated;
 }
@@ -111,6 +111,28 @@ async function specificDates(ctx, graph) {
   return previewAndRun(ctx, graph, plan, { perDay });
 }
 
+async function drawText(ctx, graph) {
+  const to = Math.min(ctx.range.to, ctx.today);
+  const { weeks } = planner.fullWeeks(ctx.range.from, to, ctx.today);
+  const tryPlan = (text, perCell = null) =>
+    planner.planArt({ text, counts: graph.counts, ...ctx.range, to, today: ctx.today, perCell, rng: ctx.rng });
+  const text = await prompt.input({
+    message: 'Text to draw',
+    initial: 'Hello!',
+    hint: `about ${Math.floor((weeks + 1) / 6)} characters fit · letters, digits, punctuation, ♥ ★`,
+    validate: check((v) => tryPlan(v)),
+  });
+  const strength = await prompt.select({
+    message: 'How dark should the letters be?',
+    options: [
+      { label: 'Darkest green', hint: 'adds just enough commits to each cell', value: 'auto' },
+      { label: 'Custom', hint: 'choose the commits per cell yourself', value: 'custom' },
+    ],
+  });
+  const perCell = strength === 'custom' ? await askCommitRange('Commits per cell', '1-4') : null;
+  return previewAndRun(ctx, graph, tryPlan(text, perCell), { perDay: perCell });
+}
+
 async function changeRange(ctx) {
   const year = dates.parts(ctx.today).y;
   const choice = await prompt.select({
@@ -186,6 +208,7 @@ async function askUser(ctx, opts) {
 const menu = (ctx, empty) => [
   { label: 'Fill empty days', hint: `commit only on the ${term.plural(empty.length, 'day')} with no contributions`, value: 'fill' },
   { label: 'List empty days', hint: 'see every date without contributions', value: 'list' },
+  { label: 'Draw text', hint: 'write words across your graph, like Hello!', value: 'art' },
   { label: 'Random commits', hint: 'spread a number of commits over the range', value: 'random' },
   { label: 'Specific dates', hint: 'commit on days you pick', value: 'date' },
   { label: 'Change range', hint: dates.prettyRange(ctx.range.from, Math.min(ctx.range.to, ctx.today)), value: 'range' },
@@ -215,6 +238,7 @@ async function run(opts) {
     if (action === 'exit') break;
     try {
       if (action === 'fill') graph = await fill(ctx, graph);
+      else if (action === 'art') graph = await drawText(ctx, graph);
       else if (action === 'random') graph = await random(ctx, graph);
       else if (action === 'date') graph = await specificDates(ctx, graph);
       else if (action === 'list') {
@@ -240,4 +264,4 @@ async function run(opts) {
   log.line();
 }
 
-module.exports = { run };
+module.exports = { run, menu };

@@ -103,3 +103,75 @@ test('applyPlan adds planned commits', () => {
   assert.equal(out.get('2026-10-03'), 1);
   assert.equal(counts.get('2026-10-02'), 3, 'input is not mutated');
 });
+
+// ─── Text art ───────────────────────────────────────────────────────────────
+
+const { weekday } = require('../../src/core/dates');
+const { renderText } = require('../../src/core/font');
+
+const year = { from: parseDay('2025-11-02'), to: parseDay('2026-11-01'), today: parseDay('2026-11-01') };
+
+test('fullWeeks counts Sunday-to-Saturday weeks up to today', () => {
+  const { first, weeks } = p.fullWeeks(parseDay('2025-11-04'), parseDay('2026-11-03'), parseDay('2026-11-03'));
+  assert.equal(weekday(first), 0);
+  assert.equal(formatDay(first), '2025-11-09');
+  assert.equal(weeks, 51);
+});
+
+test('planArt lights exactly the font cells, starting on a Sunday', () => {
+  const plan = p.planArt({ text: 'hi', counts: new Map(), ...year, rng: p.createRng(1) });
+  const lit = renderText('hi').flat().filter(Boolean).length;
+  assert.equal(plan.days.size, lit);
+  assert.equal(weekday(plan.origin), 0);
+  assert.equal(plan.text, 'hi');
+  assert.equal(plan.width, 5 + 1 + 3);
+  for (const key of plan.days.keys()) {
+    const day = parseDay(key);
+    assert.ok(day >= plan.origin && day <= plan.end);
+    assert.ok(day <= year.today);
+  }
+});
+
+test('planArt centers text on an empty graph', () => {
+  const plan = p.planArt({ text: 'HI', counts: new Map(), ...year, rng: p.createRng(1) });
+  const { first, weeks } = p.fullWeeks(year.from, year.to, year.today);
+  const offset = (plan.origin - first) / 7;
+  assert.equal(offset, Math.floor((weeks - plan.width) / 2));
+  assert.equal(plan.noise, 0);
+});
+
+test('planArt prefers the quietest stretch of the graph', () => {
+  // Busy everywhere except the first 12 full weeks.
+  const busy = new Map();
+  const { first } = p.fullWeeks(year.from, year.to, year.today);
+  for (let day = first + 12 * 7; day <= year.today; day++) busy.set(formatDay(day), 3);
+  const plan = p.planArt({ text: 'HI', counts: busy, ...year, rng: p.createRng(1) });
+  assert.ok(plan.end < first + 12 * 7, 'text should sit in the quiet weeks');
+  assert.equal(plan.noise, 0);
+});
+
+test('planArt tops cells up to the darkest level by default', () => {
+  const counts = new Map();
+  for (let i = 0; i < 100; i++) counts.set(formatDay(year.from + i * 3), (i % 10) + 1);
+  const target = p.artTarget(counts, year.from, year.to, year.today);
+  assert.equal(target, 11);
+  const plan = p.planArt({ text: 'I', counts, ...year, rng: p.createRng(1) });
+  for (const [key, n] of plan.days) assert.equal(n + (counts.get(key) || 0) >= target, true);
+});
+
+test('planArt respects --start and a fixed commit count', () => {
+  const plan = p.planArt({ text: 'I', counts: new Map(), ...year, start: parseDay('2026-03-04'), perCell: { min: 2, max: 2 }, rng: p.createRng(1) });
+  assert.equal(formatDay(plan.origin), '2026-03-01');
+  for (const n of plan.days.values()) assert.equal(n, 2);
+});
+
+test('planArt refuses text that does not fit or reaches the future', () => {
+  assert.throws(() => p.planArt({ text: 'HELLO WORLD AGAIN', counts: new Map(), ...year, rng: p.createRng(1) }), /weeks wide/);
+  assert.throws(() => p.planArt({ text: 'HI', counts: new Map(), ...year, start: parseDay('2026-10-25'), rng: p.createRng(1) }), /future/);
+});
+
+test('on a quiet graph the letters match the busiest day', () => {
+  const counts = new Map([['2026-10-20', 9], ['2026-10-21', 2], ['2026-10-22', 1]]);
+  const plan = p.planArt({ text: 'Hi', counts, ...year, rng: p.createRng(1) });
+  assert.equal(plan.target, 9);
+});

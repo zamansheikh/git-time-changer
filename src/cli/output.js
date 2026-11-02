@@ -18,7 +18,7 @@ function printBanner() {
     list.map((k) => (k === 'e' ? theme.empty : k === 'p' ? theme.planned : theme.level[k])(sym.cell)).join(' ');
   const lines = [
     `${cells([4, 2, 'e', 3])}   ${c.bold('GitTimeChanger')} ${c.dim(`v${pkg.version}`)}`,
-    `${cells([1, 3, 'p', 4])}   ${c.dim('Find the empty days on your GitHub graph and fill only those.')}`,
+    `${cells([1, 3, 'p', 4])}   ${c.dim('Fill the empty days on your GitHub graph, or write words on it.')}`,
   ];
   log.line();
   log.lines(term.box(lines).map((line) => `  ${line}`));
@@ -45,15 +45,17 @@ function printContext(ctx) {
   log.lines(term.rows(pairs));
 }
 
-function showGraph(ctx, graph, { plan = null, title = 'Contributions' } = {}) {
+// Art views show empty days in plain gray so the letters stand out.
+function showGraph(ctx, graph, { plan = null, title = 'Contributions', art = plan?.kind === 'art' } = {}) {
   const { range, today } = ctx;
   const last = Math.min(range.to, today);
   log.line();
   log.line(term.heading(`${title}  ${c.dim(dates.prettyRange(range.from, Math.max(range.from, last)))}`));
   log.line();
-  log.lines(calendar.renderCalendar({ counts: graph.counts, from: range.from, to: range.to, today, plan: plan?.days }));
+  const highlightEmpty = !art;
+  log.lines(calendar.renderCalendar({ counts: graph.counts, from: range.from, to: range.to, today, plan: plan?.days, highlightEmpty }));
   log.line();
-  log.line(calendar.renderLegend({ plan: Boolean(plan) }));
+  log.line(calendar.renderLegend({ plan: Boolean(plan), highlightEmpty }));
   log.line();
   if (!plan) log.lines(calendar.renderStats(stats.computeStats(graph.counts, range.from, range.to, today)));
 }
@@ -65,7 +67,29 @@ function printEmptyDays(days) {
   log.lines(calendar.renderEmptyList(days));
 }
 
+function printArtPlan(ctx, plan, { perDay } = {}) {
+  const keys = [...plan.days.keys()];
+  const span = dates.prettyRange(dates.parseDay(keys[0]), dates.parseDay(keys[keys.length - 1]));
+  const strength = perDay
+    ? `${planner.describeRange(perDay)} per cell`
+    : `tops each cell up to ${plan.target}, the darkest green`;
+  const pairs = [
+    ['Text', `${theme.planned(c.bold(plan.text))}  ${c.dim(`${plan.width} weeks wide`)}`],
+    ['Commits', `${theme.planned(c.bold(term.number(plan.commits)))} new commits${c.dim(`  (${strength})`)}`],
+    ['Cells', `${c.bold(term.number(plan.days.size))}  ${c.dim(span)}`],
+    ['Into', `${displayPath(ctx.repo.root)}  ${c.dim(`${ctx.repo.branch || 'HEAD'} · ${ctx.file}`)}`],
+  ];
+  log.lines(term.rows(pairs));
+  log.line();
+  if (plan.noise > 0) {
+    log.warn(`${term.plural(plan.noise, 'day')} around the letters already ${plan.noise === 1 ? 'has' : 'have'} contributions, so the text won't be perfectly clean.`);
+    log.hint('Try another --year, or move it with --start <date>, for a quieter spot.');
+    log.line();
+  }
+}
+
 function printPlan(ctx, plan, { perDay } = {}) {
+  if (plan.kind === 'art') return printArtPlan(ctx, plan, { perDay });
   const keys = [...plan.days.keys()];
   const first = dates.parseDay(keys[0]);
   const last = dates.parseDay(keys[keys.length - 1]);

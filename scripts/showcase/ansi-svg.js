@@ -70,7 +70,7 @@ const sameStyle = (a, b) => a.fg === b.fg && a.bold === b.bold && a.dim === b.di
 const BOX = new Set(['─', '│', '╭', '╮', '╰', '╯']);
 const ICONS = new Set(['✔', '✖', '▲', '●', '❯']);
 
-function shapes(cells, top, { planned = [] } = {}) {
+function shapes(cells, top, { planned = [], planBase = PALETTE.empty } = {}) {
   const out = [];
   const color = (cell) => cell.fg || COLORS.fg;
   const opacity = (cell) => (cell.dim ? ` opacity="${COLORS.dimOpacity}"` : '');
@@ -82,7 +82,7 @@ function shapes(cells, top, { planned = [] } = {}) {
     if (cell.ch === '■') {
       const s = 12.4;
       const rect = (fill) => `<rect x="${n(x + CW / 2 - s / 2)}" y="${n(cy - s / 2)}" width="${s}" height="${s}" rx="2.4" fill="${fill}"${opacity(cell)}/>`;
-      if (cell.fg === PALETTE.planned) planned.push({ base: rect(PALETTE.empty), top: rect(cell.fg) });
+      if (cell.fg === PALETTE.planned) planned.push({ x, base: rect(planBase), top: rect(cell.fg) });
       else out.push(rect(color(cell)));
       i++;
       continue;
@@ -194,7 +194,7 @@ function renderScene(scene, { start = 0, total = 0, id = 's' } = {}) {
   for (let seg = 0; seg < boundaries.length - 1; seg++) {
     const body = [];
     for (let row = boundaries[seg]; row < boundaries[seg + 1]; row++) {
-      body.push(...shapes(parseLine(scene.lines[row]), BAR_H + PAD_TOP + row * LH, { planned }));
+      body.push(...shapes(parseLine(scene.lines[row]), BAR_H + PAD_TOP + row * LH, { planned, planBase: PALETTE[scene.planBase || 'empty'] }));
     }
     if (total && delays[seg] > 0) {
       const t = start + delays[seg];
@@ -206,11 +206,13 @@ function renderScene(scene, { start = 0, total = 0, id = 's' } = {}) {
   if (planned.length) {
     out.push(...planned.map((p) => p.base));
     if (total && scene.wipe) {
-      const w = 2000;
+      // The sweep runs from the first planned cell to the last one.
+      const left = Math.min(...planned.map((p) => p.x)) - CW;
+      const w = Math.max(...planned.map((p) => p.x)) + CW * 2 - left;
       const a = start + scene.wipe.from;
       const b = start + scene.wipe.to;
-      const anim = `<animate attributeName="width" dur="${total}s" repeatCount="indefinite" keyTimes="0;${n(a / total)};${n(b / total)};1" values="0;0;${w};${w}"/>`;
-      out.push(`<clipPath id="${id}-wipe"><rect x="0" y="0" width="${w}" height="2000">${anim}</rect></clipPath>`);
+      const anim = `<animate attributeName="width" dur="${total}s" repeatCount="indefinite" keyTimes="0;${n(a / total)};${n(b / total)};1" values="0;0;${n(w)};${n(w)}"/>`;
+      out.push(`<clipPath id="${id}-wipe"><rect x="${n(left)}" y="0" width="0" height="4000">${anim}</rect></clipPath>`);
       out.push(`<g clip-path="url(#${id}-wipe)">${planned.map((p) => p.top).join('')}</g>`);
     } else {
       out.push(...planned.map((p) => p.top));

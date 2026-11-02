@@ -18,7 +18,9 @@ const planner = require('../../src/core/plan');
 const prompt = require('../../src/ui/prompt');
 const output = require('../../src/cli/output');
 const { describeSources } = require('../../src/cli/context');
+const { menu } = require('../../src/cli/interactive');
 const { staticSvg, animatedSvg } = require('./ansi-svg');
+const { fontSvg } = require('./font-svg');
 
 term.setDepth(24);
 const { c, sym } = term;
@@ -84,14 +86,6 @@ const ok = (text) => `  ${c.green(sym.ok)} ${text}`;
 const hint = (text) => `    ${c.dim(text)}`;
 const indent = (block) => block.split('\n').map((line) => `  ${line}`);
 
-const MENU = (empty) => [
-  { label: 'Fill empty days', hint: `commit only on the ${term.plural(empty, 'day')} with no contributions` },
-  { label: 'List empty days', hint: 'see every date without contributions' },
-  { label: 'Random commits', hint: 'spread a number of commits over the range' },
-  { label: 'Specific dates', hint: 'commit on days you pick' },
-  { label: 'Change range', hint: dates.prettyRange(RANGE.from, TODAY) },
-  { label: 'Exit' },
-];
 
 const emptyList = stats.emptyDays(counts, RANGE.from, RANGE.to, TODAY);
 const perDay = { min: 1, max: 4 };
@@ -114,7 +108,7 @@ function sceneStart() {
     '',
   ];
   const menuAt = lines.length;
-  lines.push(...indent(prompt.render.select('What would you like to do?', MENU(emptyList.length), 0)));
+  lines.push(...indent(prompt.render.select('What would you like to do?', menu(ctx, emptyList), 0)));
   return { lines, steps: [{ line: menuAt, at: 1.2 }] };
 }
 
@@ -190,6 +184,52 @@ function sceneFill() {
   };
 }
 
+// ─── Text art ───────────────────────────────────────────────────────────────
+
+// A newer account: some activity at both ends of the year, a quiet middle.
+function artCounts() {
+  const rng = planner.createRng('art');
+  const out = new Map();
+  const quietFrom = dates.parseDay('2026-01-04');
+  const quietTo = dates.parseDay('2026-08-29');
+  for (let day = RANGE.from; day <= TODAY; day++) {
+    if (day >= quietFrom && day <= quietTo) continue;
+    if (rng() > (dates.isWeekend(day) ? 0.35 : 0.75)) continue;
+    out.set(dates.formatDay(day), 1 + Math.floor(rng() ** 2 * 6));
+  }
+  return out;
+}
+
+const artGraphData = artCounts();
+const artGraph = { counts: artGraphData, github: artGraphData, local: new Map(), via: 'api', warnings: [] };
+const artPlan = planner.planArt({ text: 'Hello!', counts: artGraphData, ...RANGE, today: TODAY, rng: planner.createRng('7') });
+const artAfter = { ...artGraph, counts: planner.applyPlan(artGraphData, artPlan) };
+const artCreate = `Create ${term.plural(artPlan.commits, 'commit')} in contributions?`;
+
+function sceneArtPreview() {
+  const lines = [
+    shell('gtc art "Hello!" --push'),
+    ok(`Loaded ${describeSources(ctx, artGraph)}`),
+    ...capture(() => output.printContext(ctx)),
+    ...capture(() => output.showGraph(ctx, artGraph, { plan: artPlan, title: 'Preview' })),
+  ];
+  const planAt = lines.length;
+  lines.push(...capture(() => output.printPlan(ctx, artPlan)));
+  const confirmAt = lines.length;
+  lines.push(...indent(prompt.render.confirm(artCreate, true)));
+  return { lines, planBase: 'none', wipe: { from: 0.6, to: 2.6 }, steps: [{ line: planAt, at: 2.9 }, { line: confirmAt, at: 3.7 }] };
+}
+
+function sceneArtDone() {
+  const lines = [...indent(prompt.render.answered(artCreate, 'Yes')), term.progress(artPlan.commits).render(artPlan.commits, '')];
+  const createdAt = lines.length;
+  lines.push(ok(`Created ${c.bold(term.plural(artPlan.commits, 'commit'))} on ${term.plural(artPlan.days.size, 'day')} in 3.9s`));
+  lines.push(ok('Pushed to origin/main'), hint('Your graph: https://github.com/octocat  (it can take a few minutes to update)'));
+  const graphAt = lines.length;
+  lines.push(...capture(() => output.showGraph(ctx, artAfter, { title: 'Updated graph', art: true })));
+  return { lines, steps: [{ line: createdAt, at: 0.5 }, { line: graphAt, at: 1.1 }] };
+}
+
 // ─── Write files ────────────────────────────────────────────────────────────
 
 const outDir = path.join(__dirname, '..', '..', 'docs', 'images');
@@ -203,6 +243,21 @@ const files = {
     'GitTimeChanger interactive session: read the graph, preview the empty days being filled, commit and push.',
   ),
   'calendar.svg': staticSvg(sceneCalendar(), 'gtc calendar — ~/code/contributions', 'gtc calendar --list: the graph with empty days highlighted, stats and a list of every empty day.'),
+  'art.svg': animatedSvg(
+    [sceneArtPreview(), sceneArtDone()],
+    [7, 6],
+    'gtc art — ~/code/contributions',
+    'gtc art "Hello!": the text sweeps across the calendar preview in purple, then the commits are created and Hello! appears in green on the updated graph.',
+  ),
+  'font.svg': fontSvg(
+    [
+      { title: 'Capitals', lines: ['ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ'] },
+      { title: 'Lowercase', lines: ['abcdefghijklm', 'nopqrstuvwxyz'] },
+      { title: 'Digits, punctuation and symbols', lines: ['0123456789 € £ ♥ ★', '! ? . , : ; \' " - + * = / \\', '( ) [ ] { } < > @ # $ %', '& _ ~ ^ | ` ¡ ¿'] },
+      { title: 'Accents', lines: ['á é í ó ú à è ì ò ù', 'â ê î ô û ä ë ï ö ü ã õ ñ'] },
+    ],
+    { title: 'The gtc art font', subtitle: 'Every character is 7 cells tall, one week per column, so it fits the contribution graph exactly.' },
+  ),
   'fill.svg': staticSvg(sceneFill(), 'gtc fill — ~/code/contributions', 'gtc fill: a preview of the commits that will go on empty weekdays, then the commits being created and pushed.'),
 };
 

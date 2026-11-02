@@ -88,6 +88,7 @@ const PALETTE = {
   levels: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
   empty: '#d29922',
   planned: '#a371f7',
+  none: '#30363d',
   accent: '#58a6ff',
   brand: '#39d353',
 };
@@ -97,6 +98,7 @@ const theme = {
   brand: hex(PALETTE.brand, 32),
   empty: hex(PALETTE.empty, 33),
   planned: hex(PALETTE.planned, 35),
+  none: hex(PALETTE.none, 90),
   level: [
     hex(PALETTE.levels[0], 90),
     hex(PALETTE.levels[1], 32),
