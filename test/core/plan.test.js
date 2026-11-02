@@ -175,3 +175,12 @@ test('on a quiet graph the letters match the busiest day', () => {
   const plan = p.planArt({ text: 'Hi', counts, ...year, rng: p.createRng(1) });
   assert.equal(plan.target, 9);
 });
+
+test('planFill and planRandom keep only the chosen weekdays', () => {
+  const weekdays = new Set([1, 3]); // Mon, Wed
+  const fill = p.planFill({ counts, from, to, today, perDay: { min: 1, max: 1 }, weekdays, rng: p.createRng(1) });
+  assert.ok(fill.days.size > 0);
+  for (const key of fill.days.keys()) assert.ok(weekdays.has(require('../../src/core/dates').weekday(parseDay(key))), key);
+  const random = p.planRandom({ counts, from, to, today, total: 40, weekdays, rng: p.createRng(2) });
+  for (const key of random.days.keys()) assert.ok([1, 3].includes(require('../../src/core/dates').weekday(parseDay(key))), key);
+});

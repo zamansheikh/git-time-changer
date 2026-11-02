@@ -62,6 +62,32 @@ function checkDays(days, today) {
   if (future.length) throw new UserError(`${dates.formatDay(future[0])} is in the future. Pick dates up to today.`);
 }
 
+// --weekdays and --skip-weekends as one Set of weekday numbers, or null for every day.
+function weekdayFilter(opts) {
+  let set = opts.weekdays ? parsed(() => dates.parseWeekdays(opts.weekdays)) : new Set([0, 1, 2, 3, 4, 5, 6]);
+  if (opts['skip-weekends']) set = new Set([...set].filter((w) => w !== 0 && w !== 6));
+  if (set.size === 0) throw new UserError('--weekdays only lists weekend days, and --skip-weekends removes them.');
+  return set.size === 7 ? null : set;
+}
+
+// PowerShell passes an unquoted mon,wed,fri as three arguments, and people also
+// type --weekdays mon wed fri. Fold weekday names left over after the command
+// back into --weekdays. Returns the arguments that are still extra.
+function foldWeekdayArgs(opts, extra) {
+  if (!opts.weekdays || !extra.length) return extra;
+  const isWeekdays = (word) => {
+    try {
+      dates.parseWeekdays(word);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  if (!extra.every(isWeekdays)) return extra;
+  opts.weekdays = [opts.weekdays, ...extra].join(',');
+  return [];
+}
+
 // zsh (by default) and Windows cmd don't treat # as a comment, so a copied
 // example like `gtc fill --push   # do it` reaches gtc as extra arguments.
 // Cut from a lone "#" onwards. A "#" right after the command, or at the very
@@ -98,6 +124,8 @@ module.exports = {
   check,
   dataFile,
   checkDays,
+  weekdayFilter,
+  foldWeekdayArgs,
   splitShellComment,
   artText,
 };

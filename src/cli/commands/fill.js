@@ -4,7 +4,7 @@
 
 const planner = require('../../core/plan');
 const { log } = require('../../ui/term');
-const { parsed } = require('../helpers');
+const { parsed, weekdayFilter } = require('../helpers');
 const { createContext, capRangeAtToday, loadWithSpinner } = require('../context');
 const { printContext, showGraph, printPlan } = require('../output');
 const { execute } = require('../run');
@@ -14,6 +14,7 @@ async function run(opts) {
   capRangeAtToday(ctx);
   const perDay = parsed(() => planner.parseCommitRange(opts.commits ?? '1-4'));
   const density = parsed(() => planner.parsePercent(opts.density ?? '100'));
+  const weekdays = weekdayFilter(opts);
   const graph = await loadWithSpinner(ctx, opts);
   printContext(ctx);
   const plan = planner.planFill({
@@ -22,7 +23,7 @@ async function run(opts) {
     today: ctx.today,
     perDay,
     density,
-    skipWeekends: Boolean(opts['skip-weekends']),
+    weekdays,
     rng: ctx.rng,
   });
   if (plan.commits === 0) {
@@ -32,7 +33,7 @@ async function run(opts) {
     return;
   }
   showGraph(ctx, graph, { plan, title: 'Preview' });
-  printPlan(ctx, plan, { perDay });
+  printPlan(ctx, plan, { perDay, weekdays });
   await execute(ctx, plan, { opts, interactive: false });
 }
 

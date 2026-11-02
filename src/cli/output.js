@@ -88,7 +88,7 @@ function printArtPlan(ctx, plan, { perDay } = {}) {
   }
 }
 
-function printPlan(ctx, plan, { perDay } = {}) {
+function printPlan(ctx, plan, { perDay, weekdays } = {}) {
   if (plan.kind === 'art') return printArtPlan(ctx, plan, { perDay });
   const keys = [...plan.days.keys()];
   const first = dates.parseDay(keys[0]);
@@ -102,6 +102,7 @@ function printPlan(ctx, plan, { perDay } = {}) {
   const pairs = [
     ['Commits', `${theme.planned(c.bold(term.number(plan.commits)))} new ${plan.commits === 1 ? 'commit' : 'commits'}${perDayText}`],
     ['Days', `${daysText}  ${c.dim(span)}`],
+    ...(weekdays && weekdays.size < 7 ? [['Weekdays', dates.describeWeekdays(weekdays)]] : []),
     ['Into', `${displayPath(ctx.repo.root)}  ${c.dim(`${ctx.repo.branch || 'HEAD'} · ${ctx.file}`)}`],
     ['Seed', c.dim(`${ctx.seed}  (add --seed ${ctx.seed} to get the same plan again)`)],
   ];

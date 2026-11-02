@@ -20,8 +20,37 @@ npx git-time-changer@latest art "Hello"
 
 </div>
 
+## Install
+
+Needs [Node.js](https://nodejs.org) 18.3 or newer and git. Pick one:
+
+**Run it without installing.** `@latest` makes `npx` use the newest version every time:
+
+```bash
+npx git-time-changer@latest
+```
+
+**Install it globally.** Then run `gtc` in any repository:
+
+```bash
+npm install -g git-time-changer@latest
+```
+
+Run the same command again to update, and check the version with `gtc --version`. If npm stops with an EACCES permission error on macOS or Linux, [fix npm's permissions](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally) instead of using `sudo`.
+
+**From source:**
+
+```bash
+git clone https://github.com/zamansheikh/git-time-changer.git
+cd git-time-changer
+npm link
+```
+
+These commands work the same in every common terminal: zsh and bash on macOS and Linux, fish, PowerShell and Windows Command Prompt.
+
 ## Contents
 
+- [Install](#install)
 - [Features](#features)
 - [Quick start](#quick-start)
 - [Usage](#usage)
@@ -37,7 +66,7 @@ npx git-time-changer@latest art "Hello"
 - **Empty-day finder.** Reads your contribution calendar from GitHub and from local git history, highlights every day without contributions, and lists them month by month.
 - **Fill only the gaps.** Commits land on empty days and nowhere else. Choose how many commits per day, what share of the gaps to fill, and whether to skip weekends.
 - **Preview before writing.** Every command first draws the calendar with the new commits in purple. `--dry-run` stops there.
-- **Interactive terminal UI.** Arrow-key menus, a live progress bar, and an optional push at the end.
+- **Interactive terminal UI.** Arrow-key menus, a day picker you steer across your own graph, days of the week picked by keypress, a live progress bar, and an optional push at the end.
 - **Commits land on the right square.** Each commit gets a time between 09:00 and 23:00 when your local date and the UTC date are the same, so time zones can't push it onto a neighbouring square.
 - **Leaves your work alone.** Only `data.json` is committed. Anything else you have staged stays staged.
 - **Zero dependencies.** Needs only Node.js 18.3+ and git. Run it with `npx` or install it once and use it in any repo.
@@ -54,19 +83,9 @@ cd path/to/your-repo
 npx git-time-changer@latest art "Hello" --dry-run
 ```
 
-`--dry-run` previews the text on your graph without committing anything. To open the interactive mode instead, run `npx git-time-changer@latest` on its own. It finds your GitHub username, draws your graph and lets you choose what to do: draw text, fill empty days, and more.
+`--dry-run` previews the text on your graph without committing anything. To open the interactive mode instead, run `npx git-time-changer@latest` on its own. It finds your GitHub username, draws your graph and lets you choose what to do: draw text, pick days, fill empty days, and more.
 
-These commands work the same in every common terminal: zsh and bash on macOS and Linux, fish, PowerShell and Windows Command Prompt.
-
-### Install
-
-| How | Command | Then run |
-| --- | --- | --- |
-| No install | `npx git-time-changer@latest` | — |
-| Global install | `npm install -g git-time-changer@latest` | `gtc` in any repo |
-| From source | `git clone https://github.com/zamansheikh/git-time-changer.git`, then `npm link` inside the new folder | `gtc` in any repo |
-
-`@latest` makes `npx` fetch the newest version even if an older one is installed. Run the global install command again to update `gtc`. Every command takes `--repo <path>` if you'd rather not `cd` into the target repo.
+Installed globally? Use `gtc` in place of `npx git-time-changer@latest`, for example `gtc art "Hello" --dry-run`. Every command takes `--repo <path>` if you'd rather not `cd` into the target repo.
 
 ## Usage
 
@@ -100,6 +119,25 @@ gtc
 ```
 
 <img src="docs/images/demo.svg" alt="GitTimeChanger interactive session: reading the graph, previewing the empty days being filled, then committing and pushing" width="100%">
+
+**Pick days on your graph.** Choose *Pick days* in the menu and a cursor appears on your contribution graph:
+
+| Key | Does |
+| --- | --- |
+| ↑ ↓ | move one day |
+| ← → | move one week |
+| Space | select or unselect the day |
+| 1 – 7 | select every Monday … Sunday in the range |
+| W | select the whole week |
+| E | select every day without contributions |
+| C | clear the selection |
+| T | type dates instead |
+| Enter | commit on the selected days (or the day under the cursor) |
+| Esc | back to the menu |
+
+**Pick days of the week.** *Fill empty days* and *Random commits* ask which days of the week to use. Press 1 – 7 (Monday to Sunday) or Space to switch a day on or off, W for weekdays, E for weekends, A for all, then Enter. On the command line, use `--weekdays`.
+
+<img src="docs/images/pick.svg" alt="The day picker: a cursor on the contribution graph with a week, a single day and three Fridays selected in purple, then the days-of-the-week picker with Monday, Wednesday and Friday switched on" width="100%">
 
 ### See your empty days
 
@@ -146,6 +184,7 @@ Preview first, then run it again with `--push` to create the commits and push th
 | `--start <date>` | quietest spot | `art`: the week the text starts in. |
 | `--density <percent>` | `100` | Share of empty days to fill. Lower values leave a few natural-looking gaps. |
 | `--skip-weekends` | off | Leave Saturdays and Sundays alone. |
+| `--weekdays <days>` | every day | `fill` and `random`: only these days of the week, like `mon-fri` or `"mon,wed,fri"`. |
 | `--only-empty` | off | `random`: use empty days only. |
 | `--seed <value>` | random | Repeat the exact same plan. |
 | `--file <path>` | `data.json` | The file each commit changes. |
@@ -174,6 +213,12 @@ Fill every gap in 2025 with 2–5 commits each, then push:
 
 ```bash
 gtc fill --year 2025 --commits 2-5 --push
+```
+
+Fill only the empty Mondays, Wednesdays and Fridays:
+
+```bash
+gtc fill --weekdays "mon,wed,fri" --dry-run
 ```
 
 Fill about 80% of the gaps on weekdays only, so the graph keeps a few empty days:
@@ -271,6 +316,7 @@ src/
 └── ui/                     terminal output
     ├── term.js             colors, layout, spinner, progress bar
     ├── prompt.js           arrow-key select, confirm and text prompts
+    ├── picker.js           day picker on the graph, days-of-the-week picker
     └── calendar.js         heatmap, legend, stats, empty-day list
 test/                       unit tests, mirroring src/
 scripts/showcase/           renders docs/images/*.svg from the real UI code
@@ -282,9 +328,11 @@ The screenshots aren't hand-drawn: `scripts/showcase` runs the same rendering co
 
 ### Releasing
 
+`npm version` bumps the version and tags it, and `npm publish` runs the tests before it uploads anything.
+
 ```bash
-npm version minor     # bump the version and tag it
-npm publish           # runs the tests first (prepublishOnly)
+npm version minor
+npm publish
 git push --follow-tags
 ```
 

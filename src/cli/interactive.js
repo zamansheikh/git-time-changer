@@ -8,6 +8,7 @@ const planner = require('../core/plan');
 const git = require('../services/git');
 const term = require('../ui/term');
 const prompt = require('../ui/prompt');
+const picker = require('../ui/picker');
 const { GITHUB_LOGIN, displayPath, check, checkDays } = require('./helpers');
 const { createContext, findUser, loadWithSpinner } = require('./context');
 const { printBanner, printContext, showGraph, printEmptyDays, printPlan } = require('./output');
@@ -42,6 +43,12 @@ async function askCommitRange(message, initial, max = 1000) {
   return planner.parseCommitRange(text, { max });
 }
 
+// Days of the week to commit on, picked by keypress. null means every day.
+async function askWeekdays() {
+  const set = await picker.pickWeekdays({ message: 'Which days of the week?' });
+  return set.size === 7 ? null : set;
+}
+
 async function fill(ctx, graph) {
   const empty = stats.emptyDays(graph.counts, ctx.range.from, ctx.range.to, ctx.today);
   if (!empty.length) {
@@ -59,7 +66,7 @@ async function fill(ctx, graph) {
       { label: 'About 25%', value: 0.25 },
     ],
   });
-  const skipWeekends = await prompt.confirm({ message: 'Skip weekends?', initial: false });
+  const weekdays = await askWeekdays();
   const plan = planner.planFill({
     counts: graph.counts,
     ...ctx.range,
@@ -67,16 +74,16 @@ async function fill(ctx, graph) {
     today: ctx.today,
     perDay,
     density,
-    skipWeekends,
+    weekdays,
     rng: ctx.rng,
   });
-  return previewAndRun(ctx, graph, plan, { perDay });
+  return previewAndRun(ctx, graph, plan, { perDay, weekdays });
 }
 
 async function random(ctx, graph) {
   const total = await askCommitRange('How many commits in total?', '300', 100_000);
   const onlyEmpty = await prompt.confirm({ message: 'Only on empty days?', initial: true });
-  const skipWeekends = await prompt.confirm({ message: 'Skip weekends?', initial: false });
+  const weekdays = await askWeekdays();
   const plan = planner.planRandom({
     counts: graph.counts,
     ...ctx.range,
@@ -84,13 +91,13 @@ async function random(ctx, graph) {
     today: ctx.today,
     total: planner.randInt(ctx.rng, total.min, total.max),
     onlyEmpty,
-    skipWeekends,
+    weekdays,
     rng: ctx.rng,
   });
-  return previewAndRun(ctx, graph, plan);
+  return previewAndRun(ctx, graph, plan, { weekdays });
 }
 
-async function specificDates(ctx, graph) {
+async function typeDates(ctx) {
   const parseDays = (text) => {
     const days = dates.parseDayList([text], ctx.today);
     checkDays(days, ctx.today);
@@ -103,11 +110,23 @@ async function specificDates(ctx, graph) {
     validate: check(parseDays),
   });
   const days = parseDays(text);
-  const perDay = await askCommitRange('Commits per day', '1-4');
-  const plan = planner.planDates({ days, perDay, rng: ctx.rng });
   if (days.some((d) => d < ctx.range.from || d > ctx.range.to)) {
     log.hint('Some dates are outside the range shown, so they are not on the preview.');
   }
+  return days;
+}
+
+// Pick days on the graph with the arrow keys, or type them (t in the picker).
+async function specificDates(ctx, graph) {
+  const picked = await picker.pickDays({
+    message: 'Pick the days to commit on',
+    counts: graph.counts,
+    ...ctx.range,
+    today: ctx.today,
+  });
+  const days = picked || (await typeDates(ctx));
+  const perDay = await askCommitRange('Commits per day', '1-4');
+  const plan = planner.planDates({ days, perDay, rng: ctx.rng });
   return previewAndRun(ctx, graph, plan, { perDay });
 }
 
@@ -210,7 +229,7 @@ const menu = (ctx, empty) => [
   { label: 'List empty days', hint: 'see every date without contributions', value: 'list' },
   { label: 'Draw text', hint: 'write words across your graph, like Hello!', value: 'art' },
   { label: 'Random commits', hint: 'spread a number of commits over the range', value: 'random' },
-  { label: 'Specific dates', hint: 'commit on days you pick', value: 'date' },
+  { label: 'Pick days', hint: 'choose days on the graph with the arrow keys', value: 'date' },
   { label: 'Change range', hint: dates.prettyRange(ctx.range.from, Math.min(ctx.range.to, ctx.today)), value: 'range' },
   { label: 'Exit', value: 'exit' },
 ];

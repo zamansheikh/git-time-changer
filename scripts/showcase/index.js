@@ -16,6 +16,7 @@ const dates = require('../../src/core/dates');
 const stats = require('../../src/core/stats');
 const planner = require('../../src/core/plan');
 const prompt = require('../../src/ui/prompt');
+const picker = require('../../src/ui/picker');
 const output = require('../../src/cli/output');
 const { describeSources } = require('../../src/cli/context');
 const { menu } = require('../../src/cli/interactive');
@@ -117,7 +118,7 @@ function scenePreview() {
     ...indent(prompt.render.answered('What would you like to do?', 'Fill empty days')),
     ...indent(prompt.render.answered('Commits per empty day', '1-4')),
     ...indent(prompt.render.answered('How many of the empty days?', 'All of them')),
-    ...indent(prompt.render.answered('Skip weekends?', 'No')),
+    ...indent(prompt.render.answered('Which days of the week?', 'every day')),
     ...capture(() => output.showGraph(ctx, graph, { plan, title: 'Preview' })),
   ];
   const planAt = lines.length;
@@ -233,6 +234,45 @@ function sceneArtDone() {
   return { lines, steps: [{ line: createdAt, at: 0.5 }, { line: graphAt, at: 1.1 }] };
 }
 
+// ─── Pickers ────────────────────────────────────────────────────────────────
+
+// The keys are fed through the real key handlers, so the frames match the app.
+function press(step, state, keys, ...rest) {
+  for (const k of keys) {
+    const key = k.length > 1 ? { name: k } : { name: k === ' ' ? 'space' : k };
+    state = step(state, k.length > 1 ? '' : k, key, ...rest);
+  }
+  return state;
+}
+
+function scenePickDays() {
+  const view = { counts, first: RANGE.from, last: TODAY };
+  let state = { cursor: dates.parseDay('2026-08-12'), selected: new Set() };
+  state = press(picker.stepDays, state, ['w', 'right', ' '], view); // the vacation week, and the day after
+  state = { ...state, cursor: dates.parseDay('2026-10-02') };
+  state = press(picker.stepDays, state, [' ', 'right', ' ', 'right', ' '], view); // three Fridays
+  return {
+    lines: [
+      shell('gtc'),
+      ...indent(prompt.render.answered('What would you like to do?', 'Pick days')),
+      ...indent(picker.render.days('Pick the days to commit on', { counts, ...RANGE, today: TODAY, ...state })),
+    ],
+  };
+}
+
+function scenePickWeekdays() {
+  const state = press(picker.stepWeekdays, { selected: new Set(dates.WEEK_ORDER), index: 0 }, ['a', '1', '3', '5']);
+  return {
+    lines: [
+      shell('gtc'),
+      ...indent(prompt.render.answered('What would you like to do?', 'Fill empty days')),
+      ...indent(prompt.render.answered('Commits per empty day', '1-4')),
+      ...indent(prompt.render.answered('How many of the empty days?', 'All of them')),
+      ...indent(picker.render.weekdays('Which days of the week?', state)),
+    ],
+  };
+}
+
 // ─── Write files ────────────────────────────────────────────────────────────
 
 const outDir = path.join(__dirname, '..', '..', 'docs', 'images');
@@ -260,6 +300,12 @@ const files = {
       { title: 'Accents', lines: ['á é í ó ú à è ì ò ù', 'â ê î ô û ä ë ï ö ü ã õ ñ'] },
     ],
     { title: 'The gtc art font', subtitle: 'Every character is 7 cells tall, one week per column, so it fits the contribution graph exactly.' },
+  ),
+  'pick.svg': animatedSvg(
+    [scenePickDays(), scenePickWeekdays()],
+    [6, 4],
+    'gtc — ~/code/contributions',
+    'gtc pickers: choose days on the graph with the arrow keys and space, then choose days of the week by keypress.',
   ),
   'fill.svg': staticSvg(sceneFill(), 'gtc fill — ~/code/contributions', 'gtc fill: a preview of the commits that will go on empty weekdays, then the commits being created and pushed.'),
 };

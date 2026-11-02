@@ -118,6 +118,59 @@ function parseDayList(items, today) {
   return [...days].sort((a, b) => a - b);
 }
 
+// ─── Days of the week ───────────────────────────────────────────────────────
+
+// Monday first, the order people pick weekdays in. Keys 1-7 in the pickers follow it.
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const WEEKDAY_GROUPS = { weekdays: [1, 2, 3, 4, 5], weekends: [0, 6], weekend: [0, 6], all: [0, 1, 2, 3, 4, 5, 6] };
+
+// "mo", "mon" or "monday" -> 1. Two letters are enough to tell any two days apart.
+function weekdayNumber(word) {
+  const w = word.toLowerCase();
+  return w.length >= 2 ? WEEKDAY_NAMES.findIndex((name) => name.startsWith(w)) : -1;
+}
+
+// "mon,wed,fri", "mon-fri", "fri-mon", "weekdays", "weekends" or "all"
+// -> Set of weekday numbers, 0 = Sunday ... 6 = Saturday.
+function parseWeekdays(text) {
+  const result = new Set();
+  for (const token of String(text).split(/[\s,]+/).filter(Boolean)) {
+    const group = WEEKDAY_GROUPS[token.toLowerCase()];
+    if (group) {
+      group.forEach((w) => result.add(w));
+      continue;
+    }
+    const ends = token.split(/-|\.\./).map(weekdayNumber);
+    if (ends.length > 2 || ends.some((w) => w === -1)) {
+      throw new RangeError(`"${token}" is not a day of the week. Use names like mon,wed,fri or a range like mon-fri.`);
+    }
+    const [a, b = a] = ends;
+    // Walk forward from a to b, wrapping past Sunday, so fri-mon means Fri, Sat, Sun, Mon.
+    for (let w = a; ; w = (w + 1) % 7) {
+      result.add(w);
+      if (w === b) break;
+    }
+  }
+  if (result.size === 0) throw new RangeError('Give at least one day of the week, like mon-fri.');
+  return result;
+}
+
+// Set of weekday numbers -> "every day", "Mon–Fri" or "Mon, Wed, Fri".
+function describeWeekdays(set) {
+  if (set.size === 7) return 'every day';
+  const runs = [];
+  for (const w of WEEK_ORDER) {
+    if (!set.has(w)) continue;
+    const run = runs[runs.length - 1];
+    if (run && WEEK_ORDER.indexOf(run[run.length - 1]) === WEEK_ORDER.indexOf(w) - 1) run.push(w);
+    else runs.push([w]);
+  }
+  return runs
+    .map((run) => (run.length >= 3 ? `${WEEKDAYS[run[0]]}–${WEEKDAYS[run[run.length - 1]]}` : run.map((w) => WEEKDAYS[w]).join(', ')))
+    .join(', ');
+}
+
 function offsetString(date) {
   const offset = -date.getTimezoneOffset();
   const sign = offset >= 0 ? '+' : '-';
@@ -159,6 +212,9 @@ module.exports = {
   lastTwelveMonths,
   resolveRange,
   parseDayList,
+  WEEK_ORDER,
+  parseWeekdays,
+  describeWeekdays,
   offsetString,
   isoLocal,
   gitDate,

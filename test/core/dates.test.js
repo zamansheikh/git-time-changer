@@ -63,3 +63,25 @@ test('isoLocal and gitDate describe the same instant', () => {
   assert.equal(Number(seconds), Math.floor(date.getTime() / 1000));
   assert.match(offset, /^[+-]\d{4}$/);
 });
+
+test('parseWeekdays reads names, ranges and groups', () => {
+  const days = (text) => [...d.parseWeekdays(text)].sort().join('');
+  assert.equal(days('mon,wed,fri'), '135');
+  assert.equal(days('Monday Tue'), '12');
+  assert.equal(days('mon-fri'), '12345');
+  assert.equal(days('tu..th'), '234');
+  assert.equal(days('fri-mon'), '0156', 'ranges wrap past Sunday');
+  assert.equal(days('weekdays'), '12345');
+  assert.equal(days('weekends'), '06');
+  assert.equal(days('all'), '0123456');
+  for (const bad of ['t', 'funday', 'mon-fri-sat', '', ' , ']) assert.throws(() => d.parseWeekdays(bad), RangeError, bad);
+});
+
+test('describeWeekdays names a selection', () => {
+  const describe = (list) => d.describeWeekdays(new Set(list));
+  assert.equal(describe([0, 1, 2, 3, 4, 5, 6]), 'every day');
+  assert.equal(describe([1, 2, 3, 4, 5]), 'Mon–Fri');
+  assert.equal(describe([1, 3, 5]), 'Mon, Wed, Fri');
+  assert.equal(describe([6, 0]), 'Sat, Sun');
+  assert.equal(describe([2]), 'Tue');
+});

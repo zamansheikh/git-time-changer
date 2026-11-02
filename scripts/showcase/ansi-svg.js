@@ -81,6 +81,14 @@ function shapes(cells, top, { planned = [], planBase = PALETTE.empty } = {}) {
   while (i < cells.length) {
     const cell = cells[i];
     const x = PAD_X + i * CW;
+    if (cell.ch === '■' && cell.inverse) {
+      // Inverse video (the day picker's cursor): a block in the cell's color with a dark square inside.
+      const square = (s, fill, rx) =>
+        `<rect x="${n(x + CW / 2 - s / 2)}" y="${n(cy - s / 2)}" width="${s}" height="${s}" rx="${rx}" fill="${fill}"/>`;
+      out.push(square(16.8, color(cell), 3.4), square(7.6, COLORS.bg, 1.6));
+      i++;
+      continue;
+    }
     if (cell.ch === '■') {
       const s = 12.4;
       const rect = (fill) => `<rect x="${n(x + CW / 2 - s / 2)}" y="${n(cy - s / 2)}" width="${s}" height="${s}" rx="2.4" fill="${fill}"${opacity(cell)}/>`;

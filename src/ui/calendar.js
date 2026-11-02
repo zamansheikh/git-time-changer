@@ -60,8 +60,9 @@ function monthHeader(start, w0, w1, from, to, cellWidth) {
  * Renders the heatmap as lines of text.
  * plan: optional Map of 'YYYY-MM-DD' -> commits that will be added (shown in purple).
  * highlightEmpty: show days without contributions in amber (false: plain gray, like GitHub).
+ * cursor: optional day drawn in inverse video, for the day picker.
  */
-function renderCalendar({ counts, from, to, today, plan = null, highlightEmpty = true, maxColumns = columns(), indent = '  ' }) {
+function renderCalendar({ counts, from, to, today, plan = null, highlightEmpty = true, cursor = null, maxColumns = columns(), indent = '  ' }) {
   const last = Math.min(to, today);
   const start = from - weekday(from);
   const end = to + (6 - weekday(to));
@@ -87,6 +88,7 @@ function renderCalendar({ counts, from, to, today, plan = null, highlightEmpty =
           if (plan && plan.has(key)) cell = glyph('planned');
           else if (count > 0) cell = glyph('level', scale(count));
           else cell = glyph(highlightEmpty ? 'empty' : 'none');
+          if (day === cursor) cell = getDepth() > 1 ? c.inverse(cell) : '@';
         }
         row += cell;
         if (cellWidth === 2 && w < w1 - 1) row += ' ';
@@ -173,6 +175,7 @@ module.exports = {
   renderLegend,
   renderStats,
   renderEmptyList,
+  wrapItems,
   layout,
   LABEL_WIDTH,
 };

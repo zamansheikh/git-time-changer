@@ -33,3 +33,28 @@ test('artText undoes common shell quoting slips', () => {
   assert.equal(artText(['‘Hi’']), 'Hi', 'curly single quotes from a chat app');
   assert.equal(artText(["'"]), "'", 'a lone quote is text');
 });
+
+test('weekdayFilter combines --weekdays and --skip-weekends', () => {
+  const { weekdayFilter, UserError } = require('../../src/cli/helpers');
+  const days = (opts) => {
+    const set = weekdayFilter(opts);
+    return set && [...set].sort().join('');
+  };
+  assert.equal(days({}), null, 'every day means no filter');
+  assert.equal(days({ 'skip-weekends': true }), '12345');
+  assert.equal(days({ weekdays: 'mon,sat' }), '16');
+  assert.equal(days({ weekdays: 'mon,sat', 'skip-weekends': true }), '1');
+  assert.throws(() => weekdayFilter({ weekdays: 'weekends', 'skip-weekends': true }), UserError);
+  assert.throws(() => weekdayFilter({ weekdays: 'nope' }), UserError);
+});
+
+test('foldWeekdayArgs puts back a weekday list a shell split up', () => {
+  const { foldWeekdayArgs } = require('../../src/cli/helpers');
+  const opts = { weekdays: 'mon' };
+  assert.deepEqual(foldWeekdayArgs(opts, ['wed', 'fri']), []);
+  assert.equal(opts.weekdays, 'mon,wed,fri');
+  const other = { weekdays: 'mon' };
+  assert.deepEqual(foldWeekdayArgs(other, ['wed', 'hello']), ['wed', 'hello'], 'not all weekdays: left alone');
+  assert.equal(other.weekdays, 'mon');
+  assert.deepEqual(foldWeekdayArgs({}, ['wed']), ['wed'], 'no --weekdays: left alone');
+});

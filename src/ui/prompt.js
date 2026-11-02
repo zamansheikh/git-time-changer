@@ -179,5 +179,8 @@ module.exports = {
   input,
   isInteractive,
   CancelledError,
+  session,
+  question,
+  cancelled,
   render: { select: renderSelect, confirm: renderConfirm, input: renderInput, answered },
 };

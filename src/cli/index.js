@@ -9,7 +9,7 @@ const prompt = require('../ui/prompt');
 const commands = require('./commands');
 const interactive = require('./interactive');
 const { printHelp } = require('./help');
-const { UserError, splitShellComment } = require('./helpers');
+const { UserError, splitShellComment, foldWeekdayArgs } = require('./helpers');
 
 const { c, log } = term;
 
@@ -24,6 +24,7 @@ const OPTIONS = {
   start: { type: 'string' },
   density: { type: 'string' },
   'skip-weekends': { type: 'boolean' },
+  weekdays: { type: 'string' },
   'only-empty': { type: 'boolean' },
   seed: { type: 'string' },
   file: { type: 'string' },
@@ -82,8 +83,9 @@ async function main(argv = process.argv.slice(2)) {
     }
     const found = findCommand(name);
     if (!found) throw new UserError(`Unknown command "${name}".`, 'Run gtc --help to see the commands.');
-    await found.command.run(opts, rest);
-    if (rest.length && !['date', 'art'].includes(found.key)) log.warn(`Ignored extra arguments: ${rest.join(' ')}`);
+    const extra = ['fill', 'random'].includes(found.key) ? foldWeekdayArgs(opts, rest) : rest;
+    await found.command.run(opts, extra);
+    if (extra.length && !['date', 'art'].includes(found.key)) log.warn(`Ignored extra arguments: ${extra.join(' ')}`);
   } catch (error) {
     if (error instanceof prompt.CancelledError) {
       log.line();

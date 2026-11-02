@@ -64,10 +64,12 @@ function finalize(perDay, kind) {
   return { kind, days, commits };
 }
 
-function candidateDays({ counts, from, to, today, onlyEmpty, skipWeekends }) {
+// weekdays: optional Set of weekday numbers (0 = Sunday) to keep.
+function candidateDays({ counts, from, to, today, onlyEmpty, skipWeekends, weekdays }) {
   const days = [];
   for (let day = from; day <= Math.min(to, today); day++) {
     if (skipWeekends && isWeekend(day)) continue;
+    if (weekdays && !weekdays.has(weekday(day))) continue;
     if (onlyEmpty && (counts.get(formatDay(day)) || 0) > 0) continue;
     days.push(day);
   }
@@ -75,8 +77,8 @@ function candidateDays({ counts, from, to, today, onlyEmpty, skipWeekends }) {
 }
 
 // Commit only on days with no contributions.
-function planFill({ counts, from, to, today, perDay, density = 1, skipWeekends = false, rng }) {
-  const candidates = candidateDays({ counts, from, to, today, onlyEmpty: true, skipWeekends });
+function planFill({ counts, from, to, today, perDay, density = 1, skipWeekends = false, weekdays = null, rng }) {
+  const candidates = candidateDays({ counts, from, to, today, onlyEmpty: true, skipWeekends, weekdays });
   const take = Math.round(candidates.length * density);
   const chosen = density >= 1 ? candidates : shuffle(candidates, rng).slice(0, take);
   const plan = new Map();
@@ -85,8 +87,8 @@ function planFill({ counts, from, to, today, perDay, density = 1, skipWeekends =
 }
 
 // Spread a total number of commits over random days (the old indexRan.js behaviour).
-function planRandom({ counts, from, to, today, total, onlyEmpty = false, skipWeekends = false, rng }) {
-  const candidates = candidateDays({ counts, from, to, today, onlyEmpty, skipWeekends });
+function planRandom({ counts, from, to, today, total, onlyEmpty = false, skipWeekends = false, weekdays = null, rng }) {
+  const candidates = candidateDays({ counts, from, to, today, onlyEmpty, skipWeekends, weekdays });
   const plan = new Map();
   if (candidates.length) {
     for (let i = 0; i < total; i++) {
